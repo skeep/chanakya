@@ -136,7 +136,7 @@
    */
   core.processPostback = function (payload, sender) {
     // return chatSession[sender.id].expectation === 'postback' ? core.respond(payload, sender) : core.respond('fail', sender);
-    core.respond(payload, sender);
+    return core.respond(payload, sender);
   };
 
   core.dispatch = function (message, sender) {
