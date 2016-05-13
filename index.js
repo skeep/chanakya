@@ -46,18 +46,6 @@
       if (_.isUndefined(artifacts[type][name])) {
         console.error(clc.red(name + ' is not a registered ' + type + '!!! You may want to check for typo as well.'));
       } else {
-        if (type === 'responses' && _.isUndefined(params)) {
-          params = {
-            first_name: 'Suman',
-            last_name: 'Paul',
-            profile_pic: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p200x200/11088557_10152723005551301_4707983329668440155_n.jpg?oh=de4509dac87689ba61fc00e0e81d64c2&oe=579FCF31',
-            locale: 'en_GB',
-            timezone: 5.5,
-            gender: 'male',
-            id: 1247491308618704,
-            expectation: app.expectation
-          };
-        }
         if (type === 'responses') {
           if (_.isUndefined(artifacts.responseExpectation[name])) {
             chatSession[params.id].expectation = 'postback';
@@ -134,7 +122,9 @@
         }
       );
     } else {
-      core.respond('fail', sender);
+      return Q.fcall(function () {
+        return core.respond('fail', sender);
+      });
     }
   };
 
@@ -203,6 +193,8 @@
     for (i = 0; i < messaging_events.length; i++) {
       var event = req.body.entry[0].messaging[i];
       var sender = event.sender.id;
+
+      console.log(event, sender);
 
       if (_.isUndefined(chatSession[sender])) {
         https.get('https://graph.facebook.com/v2.6/' + sender + '?access_token=' + app.token, function (res) {
