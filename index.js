@@ -12,7 +12,8 @@
     bodyParser = require('body-parser'),
     https = require('https'),
     Q = require('q'),
-    path = require('path');
+    path = require('path'),
+    JSONbig = require('json-bigint');
 
   var core = {}, app = {}, chatSession = {};
 
@@ -176,9 +177,7 @@
   server.set('port', (process.env.PORT || 3000));
 
   server.use(bodyParser.urlencoded({extended: false}));
-  server.use(bodyParser.json());
-  server.use('/img', express.static(__dirname + '/img'));
-  // server.use('/', express.static(__dirname + '/public'));
+  server.use(bodyParser.text({type: 'application/json'}))
 
   server.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, '../../public', 'index.html'));
@@ -199,14 +198,10 @@
 
   server.post('/webhook/', function (req, res) {
 
-    messaging_events = req.body.entry[0].messaging;
+    var body = JSONbig.parse(req.body);
 
-    for (i = 0; i < messaging_events.length; i++) {
-      var event = req.body.entry[0].messaging[i];
-      var sender = event.sender.id;
-
-      console.log(event, sender);
-
+    _.each(body.entry[0].messaging, function (event) {
+      var sender = event.sender.id.toString();
       if (_.isUndefined(chatSession[sender])) {
         https.get('https://graph.facebook.com/v2.6/' + sender + '?access_token=' + app.token, function (res) {
           res.setEncoding('utf8');
@@ -223,7 +218,8 @@
       } else {
         handleMessage(event, chatSession[sender]);
       }
-    }
+    })
+
     res.sendStatus(200);
   });
 
